@@ -1,0 +1,71 @@
+{"name":"WorkerClockApp","version":"0.0.1","private":true,"scripts":{"start":"node node_modules/react-native/local-cli/cli.js start"},"dependencies":{"react-native":"0.83.1"}}import React, { useState } from 'react';
+import { View, Text, Button, Alert } from 'react-native';
+import Geolocation from 'react-native-geolocation-service';
+
+// Venue coordinates (example)
+const VENUE_LAT = 4.8156;   // Replace with your venue latitude
+const VENUE_LNG = 7.0498;   // Replace with your venue longitude
+const ALLOWED_DISTANCE = 5; // meters
+
+// Function to calculate distance between two coordinates
+function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // radius of Earth in meters
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+export default function App() {
+  const [status, setStatus] = useState("Not clocked in");
+
+  const handleClock = (type) => {
+    Geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const distance = getDistanceFromLatLonInMeters(latitude, longitude, VENUE_LAT, VENUE_LNG);
+
+        if (distance <= ALLOWED_DISTANCE) {
+          setStatus(`${type} successful at ${new Date().toLocaleTimeString()}`);
+          Alert.alert("Success", `${type} recorded`);
+          // TODO: send data to backend (worker ID, time, type)
+        } else {
+          Alert.alert("Error", "You must be within 5 meters of the venue!");
+        }
+      },
+      (error) => {
+        Alert.alert("Location Error", error.message);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+    );
+  };
+
+  return (
+    <View style={{ flex:1, justifyContent:'center', alignItems:'center' }}>
+      <Text style={{ fontSize:18, marginBottom:20 }}>{status}</Text>
+      <Button title="Clock In" onPress={() => handleClock("Clock In")} />
+      <View style={{ margin:10 }} />
+      <Button title="Clock Out" onPress={() => handleClock("Clock Out")} />
+    </View>
+  );{
+  "name": "WorkerClockApp",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "react-native start",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios"
+  },
+  "dependencies": {
+    "react": "18.2.0",
+    "react-native": "0.74.0"
+  },
+  "devDependencies": {
+    "@react-native-community/cli": "latest"
+  }
+}
+}

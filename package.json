@@ -1,0 +1,1 @@
+{"name":"WorkerClockApp","version":"0.0.1","private":true,"scripts":{"start":"react-native start","android":"react-native run-android","ios":"react-native run-ios"},"dependencies":{"react-native":"0.83.1"},"devDependencies":{"@react-native/metro-config":"^0.83.3"}}
